@@ -1,0 +1,5 @@
+# 忽略整个目录
+node_modules/
+build/
+dist/
+.env
