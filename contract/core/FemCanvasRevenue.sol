@@ -146,9 +146,7 @@ contract FemCanvasRevenue is IFemCanvasRevenue, Ownable, ReentrancyGuard {
         distributed = revenueDistributed[canvasId];
         
         (
-            address[] memory contributors,
-            uint256[] memory amounts,
-            uint256 totalContributions
+            address[] memory contributors,,
         ) = femCanvasContribution.getCanvasContributionDetails(canvasId);
         contributorsCount = contributors.length;
         return (totalRevenue,distributed,contributorsCount);
