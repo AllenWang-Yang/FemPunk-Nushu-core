@@ -32,7 +32,7 @@ contract FemColors is ERC721URIStorage, Ownable, EIP712, IFemColors {
     }
 
     function buyColor(uint256 colorId, string calldata metadataURI) external payable {
-        require(exists[colorId] != address(0), "Color already minted");
+        require(exists[colorId] == address(0), "Color already minted");
         uint256 price = colorPrices[colorId];
         require(msg.value >= price, "Insufficient payment");
 
@@ -57,7 +57,7 @@ contract FemColors is ERC721URIStorage, Ownable, EIP712, IFemColors {
         bytes32 s
     ) external payable {
         require(block.timestamp <= deadline, "Signature expired");
-        require(exists[colorId] != address(0), "Color already minted");
+        require(exists[colorId] == address(0), "Color already minted");
         uint256 price = colorPrices[colorId];
         require(msg.value >= price, "Insufficient payment");
 
