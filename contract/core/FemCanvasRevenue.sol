@@ -160,6 +160,40 @@ contract FemCanvasRevenue is IFemCanvasRevenue, Ownable, ReentrancyGuard {
         payable(owner()).sendValue(balance);
     }
     
+    // 新增：用户查询收益相关函数
+    
+    function getUserClaimableRevenue(address user) external view returns (
+        uint256[] memory canvasIds,
+        uint256[] memory amounts,
+        bool[] memory canClaim
+    ) {
+        // 获取用户参与的所有画布
+        uint256[] memory userCanvasIds = femCanvasContribution.getUserCanvases(user);
+        uint256 length = userCanvasIds.length;
+        
+        canvasIds = new uint256[](length);
+        amounts = new uint256[](length);
+        canClaim = new bool[](length);
+        
+        for (uint256 i = 0; i < length; i++) {
+            uint256 canvasId = userCanvasIds[i];
+            canvasIds[i] = canvasId;
+            amounts[i] = claimableAmount[canvasId][user];
+            canClaim[i] = revenueDistributed[canvasId] && amounts[i] > 0;
+        }
+    }
+    
+    function getUserTotalClaimableAmount(address user) external view returns (uint256 total) {
+        uint256[] memory userCanvasIds = femCanvasContribution.getUserCanvases(user);
+        
+        for (uint256 i = 0; i < userCanvasIds.length; i++) {
+            total += claimableAmount[userCanvasIds[i]][user];
+        }
+    }
+    
+    function canUserClaimRevenue(address user, uint256 canvasId) external view returns (bool) {
+        return revenueDistributed[canvasId] && claimableAmount[canvasId][user] > 0;
+    }
 
     receive() external payable {
         

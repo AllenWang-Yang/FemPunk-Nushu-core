@@ -59,7 +59,7 @@ contract FemCanvas is IFemCanvas, ERC1155, Ownable, ReentrancyGuard {
             canvasId: canvasId,
             dayTimestamp: dayTimestamp,
             metadataURI: _metadataURI,
-            creator: 0x92Ae87507658451736821bfFa913BAC0e184d4e2,// todo
+            creator: owner(),
             totalRaised: 0,
             finalized: false
         });

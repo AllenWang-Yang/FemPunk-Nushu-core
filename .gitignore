@@ -3,6 +3,12 @@ node_modules/
 build/
 dist/
 .env
+hardhat.config.js
+artifacts/
+cache/
+test/
+scripts/
+
 
 # macOS系统文件
 .DS_Store

@@ -14,6 +14,10 @@ contract FemCanvasContribution is IFemCanvasContribution, Ownable, ReentrancyGua
     mapping(uint256 => address[]) public contributorsList;
     // key is canvasId, contributor address, value is whether is contributor
     mapping(uint256 => mapping(address => bool)) public isContributor;
+    // user => canvasIds array (用户参与的画布列表)
+    mapping(address => uint256[]) public userCanvases;
+    // user => canvasId => index in userCanvases array
+    mapping(address => mapping(uint256 => uint256)) public userCanvasIndex;
     
     // authorized recorders
     mapping(address => bool) public authorizedRecorders;
@@ -38,6 +42,10 @@ contract FemCanvasContribution is IFemCanvasContribution, Ownable, ReentrancyGua
         if (!isContributor[canvasId][contributor]) {
             contributorsList[canvasId].push(contributor);
             isContributor[canvasId][contributor] = true;
+            
+            // 记录用户参与的画布
+            userCanvasIndex[contributor][canvasId] = userCanvases[contributor].length;
+            userCanvases[contributor].push(canvasId);
         }
         
         // update contributions
@@ -63,6 +71,10 @@ contract FemCanvasContribution is IFemCanvasContribution, Ownable, ReentrancyGua
             if (!isContributor[canvasId][contributor]) {
                 contributorsList[canvasId].push(contributor);
                 isContributor[canvasId][contributor] = true;
+                
+                // 记录用户参与的画布
+                userCanvasIndex[contributor][canvasId] = userCanvases[contributor].length;
+                userCanvases[contributor].push(canvasId);
             }
             
             // update contributions
@@ -144,5 +156,53 @@ contract FemCanvasContribution is IFemCanvasContribution, Ownable, ReentrancyGua
         
         delete contributorsList[canvasId];
         totalContributions[canvasId] = 0;
+    }
+    
+    // 新增：用户查询相关函数
+    
+    function getUserCanvases(address user) external view returns (uint256[] memory) {
+        return userCanvases[user];
+    }
+    
+    function getUserContributionDetails(address user, uint256 canvasId) external view returns (
+        uint256 contribution, 
+        uint256 ratio, 
+        bool hasContribution
+    ) {
+        contribution = contributions[canvasId][user];
+        hasContribution = isContributor[canvasId][user];
+        
+        uint256 total = totalContributions[canvasId];
+        if (total == 0 || contribution == 0) {
+            ratio = 0;
+        } else {
+            ratio = (contribution * 10000) / total; // 返回百分比，乘以10000
+        }
+    }
+    
+    function getUserAllContributions(address user) external view returns (
+        uint256[] memory canvasIds,
+        uint256[] memory contributionAmounts,
+        uint256[] memory ratios
+    ) {
+        uint256[] memory userCanvasIds = userCanvases[user];
+        uint256 length = userCanvasIds.length;
+        
+        canvasIds = new uint256[](length);
+        contributionAmounts = new uint256[](length);
+        ratios = new uint256[](length);
+        
+        for (uint256 i = 0; i < length; i++) {
+            uint256 canvasId = userCanvasIds[i];
+            canvasIds[i] = canvasId;
+            contributionAmounts[i] = contributions[canvasId][user];
+            
+            uint256 total = totalContributions[canvasId];
+            if (total == 0 || contributionAmounts[i] == 0) {
+                ratios[i] = 0;
+            } else {
+                ratios[i] = (contributionAmounts[i] * 10000) / total;
+            }
+        }
     }
 }
